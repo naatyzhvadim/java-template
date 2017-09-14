@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/java-template.iml" filepath="$PROJECT_DIR$/.idea/java-template.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/java-template_main.iml" filepath="$PROJECT_DIR$/.idea/modules/java-template_main.iml" group="java-template" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/java-template_test.iml" filepath="$PROJECT_DIR$/.idea/modules/java-template_test.iml" group="java-template" />
+    </modules>
+  </component>
+</project>
