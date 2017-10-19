@@ -1,11 +1,8 @@
 package edu.spbu.matrix;
 
-import com.sun.org.apache.bcel.internal.generic.DNEG;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -160,7 +157,7 @@ public class DenseMatrix implements Matrix
         c[i][j] = summand;
       }
     }
-    pr_mx(c);
+    //pr_mx(c);
     return new DenseMatrix(c);
   }
 
