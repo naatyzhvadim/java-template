@@ -49,11 +49,33 @@ public class MatrixTest {
 
     @Test
     public void test() throws IOException{
-        Matrix s = new SparseMatrix("./src/main/java/edu/spbu/sresult.txt");
-        Matrix m = new DenseMatrix("./src/main/java/edu/spbu/result.txt");
-        Matrix s1 = new DenseMatrix("./src/main/java/edu/spbu/sresult.txt");
-        Matrix m1 = new SparseMatrix("./src/main/java/edu/spbu/result.txt");
-        (s1.mul(m1)).print_mx();
-        assertEquals(s.mul(m), s1.mul(m1));
+        Matrix m1 = new DenseMatrix("./src/main/java/edu/spbu/m1.txt");
+        Matrix m2 = new DenseMatrix("./src/main/java/edu/spbu/m2.txt");
+        Matrix expected = new SparseMatrix("./src/main/java/edu/spbu/result.txt");
+        try{
+            assertEquals(expected, m1.dmul(m2));
+        }catch (InterruptedException e){
+
+        }
+    }
+
+    @Test
+    public void test1() throws IOException{
+        Matrix m1 = new DenseMatrix("m1.txt");
+        Matrix m2 = new DenseMatrix("m2.txt");
+        //Matrix expected = new SparseMatrix("./src/main/java/edu/spbu/result.txt");
+        System.out.println("Nat mul starts");
+        long start = System.currentTimeMillis();
+        Matrix res1 = m1.mul(m2);
+        System.out.println("Nat mul ended in " + (System.currentTimeMillis() - start));
+        try{
+            System.out.println("Dmul starts");
+            start = System.currentTimeMillis();
+            Matrix res2 = m1.dmul(m2);
+            System.out.println("Dmul ended in " + (System.currentTimeMillis() - start));
+            assertEquals(res1, res2);
+        }catch (InterruptedException e){
+
+        }
     }
 }

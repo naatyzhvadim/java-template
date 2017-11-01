@@ -188,9 +188,64 @@ public class DenseMatrix implements Matrix
    * @param o
    * @return
    */
-  @Override public Matrix dmul(Matrix o)
+
+  private double[][] t_mx, res_mx;
+  private int flag = 0;
+
+  private void make_t_mx(double[][] m){
+      t_mx = new double[n][n];
+      for(int i = 0; i < n; ++i)
+          for(int j = 0; j < n; ++j)
+              t_mx[i][j] = m[j][i];
+  }
+
+  private synchronized int get_next_task(){
+      //System.out.println("GET f = " + flag);
+      flag += 16;
+      return flag - 16;
+  }
+
+  class MyRun implements Runnable{
+      public void run(){
+          int k = get_next_task();
+          while(k < n) {
+              for(int x = k; x - k < 16 && x < n; ++x) {
+                  for (int i = 0; i < n; ++i) {
+                      int sum = 0;
+                      for (int j = 0; j < n; ++j)
+                          sum += mx[i][j] * t_mx[x][j];
+                      res_mx[i][x] = sum;
+                  }
+                  //System.out.println();
+              }
+              k = get_next_task();
+          }
+      }
+  }
+
+
+  @Override public Matrix dmul(Matrix o) throws InterruptedException
   {
-    return null;
+      DenseMatrix m2 = new DenseMatrix(o);
+      int x = 10;
+      make_t_mx(m2.getMx());
+      res_mx = new double[n][n];
+      Thread[] t = new Thread[n/x];
+      for(int i = 0; i < n/x; ++i){
+          //System.out.println("NEW THREAD");
+          t[i] = new Thread(new MyRun());
+          t[i].start();
+      }
+      for (int i = 0; i < n/x; ++i)
+          t[i].join();
+      //System.out.println("HERE flag = " + flag);
+
+      /*for(int i = 0; i < n; ++i) {
+          for (int j = 0; j < n; ++j)
+              System.out.print(res_mx[i][j] + " ");
+          System.out.println();
+      }*/
+      return new DenseMatrix(res_mx);
   }
 
   /**
