@@ -145,17 +145,18 @@ public class DenseMatrix implements Matrix
     double thatColumn[] = new double[fn];
     double[][] c = new double[fn][fn];
     for (int j = 0; j < fn; ++j) {
-      for (int k = 0; k < fn; ++k) {
-        thatColumn[k] = m[k][j];
-      }
-      for (int i = 0; i < fn; ++i) {
-        double thisRow[] = mx[i];
-        double summand = 0;
         for (int k = 0; k < fn; ++k) {
-          summand += thisRow[k] * thatColumn[k];
+            thatColumn[k] = m[k][j];
         }
-        c[i][j] = summand;
-      }
+        for (int i = 0; i < fn; ++i) {
+            //double thisRow[] = mx[i];
+            double summand = 0;
+            for (int k = 0; k < fn; ++k) {
+                //if (thisRow[k] != 0 && thatColumn[k] != 0)
+                    summand += mx[i][k] * thatColumn[k];
+            }
+            c[i][j] = summand;
+        }
     }
     //pr_mx(c);
     return new DenseMatrix(c);
@@ -199,52 +200,88 @@ public class DenseMatrix implements Matrix
               t_mx[i][j] = m[j][i];
   }
 
-  private synchronized int get_next_task(){
-      //System.out.println("GET f = " + flag);
-      flag += 16;
-      return flag - 16;
+  class Range{
+      private int start = 0, end = 0;
+      public void setStart(int x){
+          start = x;
+      }
+      public void setEnd(int x){
+          end = x;
+      }
+      public int getStart(){
+          return start;
+      }
+      public int getEnd(){
+          return end;
+      }
   }
+
+  private synchronized Range get_next_task(){
+      Range range = new Range();
+      //System.out.println("GET f = " + flag);
+      range.setStart(flag);
+      //System.out.println("Start = " + flag + " End = " + (flag + n/2) + "Thread = " + Thread.currentThread().getId());
+      flag += n/2;
+      if (flag < n)
+          range.setEnd(flag);
+      else
+          range.setEnd(n);
+      System.out.println("  Start = " + range.getStart() + " End = " + range.getEnd() + "Thread = " + Thread.currentThread().getId());
+      return range;
+  }
+
+  /*public void testing() {
+      Range range = get_next_task();
+      while (range.getStart() < n) {
+          System.out.println("  Start = " + range.getStart() + " End = " + range.getEnd());
+          range = get_next_task();
+      }
+  }*/
 
   class MyRun implements Runnable{
       public void run(){
-          int k = get_next_task();
-          while(k < n) {
-              for(int x = k; x - k < 16 && x < n; ++x) {
+          Range range = get_next_task();
+          while(range.getStart() < n) {
+              int start = range.getStart(), end = range.getEnd();
+              double[] thatColumn = new double[n];
+              for (int k = start; k < end; ++k) {
+
+                  for (int j = 0; j < n; ++j) {
+                      thatColumn[j] = mx2[j][k];
+                  }
                   for (int i = 0; i < n; ++i) {
                       int sum = 0;
+                      //System.out.println("Rows" + i + " " + k + " " + Thread.currentThread().getId());
                       for (int j = 0; j < n; ++j)
-                          sum += mx[i][j] * t_mx[x][j];
-                      res_mx[i][x] = sum;
+                          if (mx[i][j] != 0 && thatColumn[j] != 0)
+                            sum += mx[i][j] * thatColumn[j];
+                      res_mx[i][k] = sum;
                   }
                   //System.out.println();
               }
-              k = get_next_task();
+              range = get_next_task();
           }
       }
   }
+
+  private double[][] mx2;
 
 
   @Override public Matrix dmul(Matrix o) throws InterruptedException
   {
       DenseMatrix m2 = new DenseMatrix(o);
-      int x = 10;
-      make_t_mx(m2.getMx());
+      int number_of_threads = 2;
+      //make_t_mx(m2.getMx());
+      mx2 = m2.getMx();
       res_mx = new double[n][n];
-      Thread[] t = new Thread[n/x];
-      for(int i = 0; i < n/x; ++i){
+      Thread[] t = new Thread[number_of_threads];
+      for(int i = 0; i < number_of_threads; ++i){
           //System.out.println("NEW THREAD");
           t[i] = new Thread(new MyRun());
           t[i].start();
       }
-      for (int i = 0; i < n/x; ++i)
+      for (int i = 0; i < number_of_threads; ++i)
           t[i].join();
-      //System.out.println("HERE flag = " + flag);
-
-      /*for(int i = 0; i < n; ++i) {
-          for (int j = 0; j < n; ++j)
-              System.out.print(res_mx[i][j] + " ");
-          System.out.println();
-      }*/
       return new DenseMatrix(res_mx);
   }
 
