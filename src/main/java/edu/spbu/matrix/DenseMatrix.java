@@ -216,12 +216,13 @@ public class DenseMatrix implements Matrix
       }
   }
 
+  static int number_of_threads = 8;
   private synchronized Range get_next_task(){
       Range range = new Range();
       //System.out.println("GET f = " + flag);
       range.setStart(flag);
       //System.out.println("Start = " + flag + " End = " + (flag + n/2) + "Thread = " + Thread.currentThread().getId());
-      flag += n/2;
+      flag += n/number_of_threads;
       if (flag < n)
           range.setEnd(flag);
       else
@@ -270,7 +271,6 @@ public class DenseMatrix implements Matrix
   @Override public Matrix dmul(Matrix o) throws InterruptedException
   {
       DenseMatrix m2 = new DenseMatrix(o);
-      int number_of_threads = 2;
       //make_t_mx(m2.getMx());
       mx2 = m2.getMx();
       res_mx = new double[n][n];
